@@ -1,6 +1,11 @@
-# blume
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/blume-lockup-dark.svg">
+    <img src="assets/blume-lockup.svg" alt="blume" width="340">
+  </picture>
 
-A high-performance, bit-optimized bloom filter library for Rust.
+  <p>A high-performance, bit-optimized bloom filter library for Rust.</p>
+</div>
 
 A bloom filter is a space-efficient probabilistic data structure for membership
 testing. It can return **false positives** (reporting an item as present when it

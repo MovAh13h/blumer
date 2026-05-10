@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640" width="800" height="640" role="img" aria-label="blume">
+  <g transform="translate(400 280)">
+    <g transform="rotate(0)">
+      <path d="M0,0 C-58,-70 -64,-160 -22,-198 C-8,-208 8,-208 22,-198 C64,-160 58,-70 0,0 Z" fill="#5A8F6B"></path>
+      <circle cx="0" cy="-170" r="9" fill="#161616"></circle>
+    </g>
+    <g transform="rotate(72)">
+      <path d="M0,0 C-58,-70 -64,-160 -22,-198 C-8,-208 8,-208 22,-198 C64,-160 58,-70 0,0 Z" fill="#5A8F6B"></path>
+      <circle cx="0" cy="-170" r="9" fill="#161616"></circle>
+    </g>
+    <g transform="rotate(144)">
+      <path d="M0,0 C-58,-70 -64,-160 -22,-198 C-8,-208 8,-208 22,-198 C64,-160 58,-70 0,0 Z" fill="#5A8F6B"></path>
+      <circle cx="0" cy="-170" r="9" fill="#161616"></circle>
+    </g>
+    <g transform="rotate(216)">
+      <path d="M0,0 C-58,-70 -64,-160 -22,-198 C-8,-208 8,-208 22,-198 C64,-160 58,-70 0,0 Z" fill="#5A8F6B"></path>
+      <circle cx="0" cy="-170" r="9" fill="#161616"></circle>
+    </g>
+    <g transform="rotate(288)">
+      <path d="M0,0 C-58,-70 -64,-160 -22,-198 C-8,-208 8,-208 22,-198 C64,-160 58,-70 0,0 Z" fill="#D5447A"></path>
+      <circle cx="0" cy="-170" r="9" fill="#161616"></circle>
+    </g>
+    <circle cx="0" cy="0" r="28" fill="#161616"></circle>
+  </g>
+  <text x="400" y="560" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="500" font-size="96" letter-spacing="7.7" fill="#161616">blume</text>
+</svg>
