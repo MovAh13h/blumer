@@ -1,0 +1,15 @@
+[package]
+name = "blume"
+version = "0.1.0"
+edition = "2024"
+
+[dev-dependencies]
+proptest = "1"
+rstest = "0.23"
+
+[dependencies]
+ahash = "0.8"
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+serde = ["dep:serde"]
