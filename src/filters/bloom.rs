@@ -221,7 +221,7 @@ impl BloomFilter {
 
     fn raw(m: usize, k: usize, n: usize) -> Self {
         Self {
-            bits: vec![0u64; (m + 63) / 64],
+            bits: vec![0u64; m.div_ceil(64)],
             k,
             m,
             n,

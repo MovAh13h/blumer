@@ -159,6 +159,18 @@ proptest! {
     }
 }
 
+// --- is_empty ---
+
+#[test]
+fn is_empty_reflects_insertions() {
+    let mut f = CountingBloomFilter::new(100, 0.01).unwrap();
+    assert!(f.is_empty());
+    f.insert(&1u64);
+    assert!(!f.is_empty());
+    f.clear();
+    assert!(f.is_empty());
+}
+
 // --- proptest: behavioural ---
 
 proptest! {
