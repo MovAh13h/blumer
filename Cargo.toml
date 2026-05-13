@@ -21,6 +21,10 @@ harness = false
 name = "counting_filter"
 harness = false
 
+[[bench]]
+name = "atomic_bloom_filter"
+harness = false
+
 
 [dependencies]
 ahash = "0.8"

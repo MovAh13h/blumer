@@ -12,5 +12,5 @@
 
 pub use crate::bloomable::Bloomable;
 pub use crate::error::BloomError;
-pub use crate::filters::{BloomFilter, CountingBloomFilter};
-pub use crate::traits::{Filter, MutableFilter, RemovableFilter};
+pub use crate::filters::{AtomicBloomFilter, BloomFilter, CountingBloomFilter};
+pub use crate::traits::{ConcurrentFilter, Filter, MutableFilter, RemovableFilter};

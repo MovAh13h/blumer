@@ -203,3 +203,61 @@ pub trait RemovableFilter: MutableFilter {
     /// ```
     fn remove<T: Bloomable + ?Sized>(&mut self, item: &T) -> bool;
 }
+
+/// A bloom filter that supports concurrent insertion and membership testing
+/// from multiple threads without external locking.
+///
+/// Unlike [`MutableFilter`], which requires exclusive `&mut self` access,
+/// `ConcurrentFilter` uses atomic operations internally, allowing any number
+/// of threads to call [`insert`] and [`Filter::contains`] simultaneously.
+///
+/// # No false negatives under concurrency
+///
+/// The guarantee holds across threads: if thread A inserts an item and thread
+/// B subsequently calls `contains`, it will return `true`. This relies on
+/// `Release` ordering on writes and `Acquire` ordering on reads, which form
+/// a happens-before relationship across threads.
+///
+/// # Approximate item count
+///
+/// [`Filter::item_count`] is eventually consistent under concurrent use. Two
+/// threads inserting simultaneously may observe stale counts. Do not treat
+/// the value as exact when other threads are actively inserting.
+///
+/// # No concurrent `clear`
+///
+/// `clear` is intentionally absent from this trait. Resetting a filter while
+/// other threads are reading or writing produces undefined logical state.
+/// Implementations may provide `clear(&mut self)` directly — the `&mut self`
+/// requirement enforces exclusive access at the type level.
+///
+/// [`insert`]: ConcurrentFilter::insert
+pub trait ConcurrentFilter: Filter + Send + Sync {
+    /// Inserts `item` into the filter.
+    ///
+    /// Takes `&self` rather than `&mut self`, allowing concurrent calls from
+    /// multiple threads. Each bit position is set atomically using
+    /// `fetch_or` with `Release` ordering.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use blume::prelude::*;
+    /// use std::sync::Arc;
+    ///
+    /// let filter = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());
+    ///
+    /// let f1 = Arc::clone(&filter);
+    /// let f2 = Arc::clone(&filter);
+    ///
+    /// let t1 = std::thread::spawn(move || f1.insert("alice"));
+    /// let t2 = std::thread::spawn(move || f2.insert("bob"));
+    ///
+    /// t1.join().unwrap();
+    /// t2.join().unwrap();
+    ///
+    /// assert!(filter.contains("alice"));
+    /// assert!(filter.contains("bob"));
+    /// ```
+    fn insert<T: Bloomable + ?Sized>(&self, item: &T);
+}

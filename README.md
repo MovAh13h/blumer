@@ -164,10 +164,11 @@ than the standard filter.
 
 ## Filters
 
-| Type | Deletion | Memory | Use when |
-|------|----------|--------|----------|
-| `BloomFilter` | No | 1× | you only need insert + lookup |
-| `CountingBloomFilter` | Yes (`remove`) | 8× | you need to delete items |
+| Type | Thread-safe | Deletion | Memory | Use when |
+|------|-------------|----------|--------|----------|
+| `BloomFilter` | No | No | 1× | single-threaded insert + lookup |
+| `CountingBloomFilter` | No | Yes (`remove`) | 8× | single-threaded, need deletion |
+| `AtomicBloomFilter` | Yes | No | 1× | concurrent insert + lookup |
 
 ## Constructors
 
@@ -176,7 +177,34 @@ than the standard filter.
 | `BloomFilter::new(n, p)` | Normal use — optimal `m` and `k` computed automatically |
 | `BloomFilter::with_params(bits, hash_fns)` | Expert use — match the exact geometry of an existing filter (e.g. deserialising from storage) |
 
-Same constructors exist on `CountingBloomFilter`.
+Same constructors exist on `CountingBloomFilter` and `AtomicBloomFilter`.
+
+## Concurrent use
+
+`AtomicBloomFilter` allows any number of threads to insert and query
+simultaneously without external locking:
+
+```rust
+use blume::prelude::*;
+use std::sync::Arc;
+
+let filter = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());
+
+let f1 = Arc::clone(&filter);
+let f2 = Arc::clone(&filter);
+
+let t1 = std::thread::spawn(move || f1.insert("alice"));
+let t2 = std::thread::spawn(move || f2.insert("bob"));
+
+t1.join().unwrap();
+t2.join().unwrap();
+
+assert!(filter.contains("alice"));
+assert!(filter.contains("bob"));
+```
+
+Inserts use `fetch_or(Release)` and lookups use `load(Acquire)`, ensuring
+every insert that completes before a `contains` call is visible to it.
 
 ## Prelude
 
@@ -184,7 +212,8 @@ Import everything at once:
 
 ```rust
 use blume::prelude::*;
-// BloomFilter, CountingBloomFilter, Filter, MutableFilter, RemovableFilter,
+// BloomFilter, CountingBloomFilter, AtomicBloomFilter,
+// Filter, MutableFilter, RemovableFilter, ConcurrentFilter,
 // Bloomable, and BloomError are all in scope.
 ```
 
@@ -192,7 +221,7 @@ use blume::prelude::*;
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `serde` | off | `Serialize` / `Deserialize` on both filter types |
+| `serde` | off | `Serialize` / `Deserialize` on all three filter types |
 
 ```toml
 blume = { version = "0.1", features = ["serde"] }
@@ -205,8 +234,9 @@ blume = { version = "0.1", features = ["serde"] }
   [Kirsch–Mitzenmacher] double-hashing formula — no further hash calls needed.
 - **Range reduction:** `(h × m) >> 64` instead of `h % m` — replaces a
   ~30-cycle integer division with a ~3-cycle multiply-and-shift.
-- **Bit packing:** bits stored in `u64` words; counters packed 4-bit,
-  two-per-byte. Both layouts are cache-line aligned.
+- **Bit packing:** `BloomFilter` packs bits into `u64` words (64 bits/word);
+  `CountingBloomFilter` stores one `u8` counter per slot; `AtomicBloomFilter`
+  packs bits into `AtomicU64` words with the same layout as `BloomFilter`.
 
 [AHash]: https://github.com/tkaitchuck/aHash
 [Kirsch–Mitzenmacher]: https://www.eecs.harvard.edu/~michaelm/postscripts/tr-02-05.pdf

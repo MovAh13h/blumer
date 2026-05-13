@@ -130,3 +130,4 @@ macro_rules! serde_tests {
 
 serde_tests!(bloom_filter, BloomFilter);
 serde_tests!(counting_filter, CountingBloomFilter);
+serde_tests!(atomic_bloom_filter, AtomicBloomFilter);

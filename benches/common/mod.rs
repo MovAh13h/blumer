@@ -4,7 +4,12 @@
 //! `n` items. To benchmark a new filter type, create a new bench file and call
 //! these functions with the appropriate constructor.
 
-use blume::{MutableFilter, RemovableFilter};
+// Each bench binary is a separate compilation unit and only calls a subset of
+// these helpers. The unused-code lint fires per-binary, not across all binaries,
+// so we suppress it at the module level rather than on each function.
+#![allow(dead_code)]
+
+use blume::{ConcurrentFilter, MutableFilter, RemovableFilter};
 use criterion::{BenchmarkGroup, BenchmarkId, Throughput, black_box, measurement::WallTime};
 
 /// Capacities at which every benchmark is run.
@@ -103,7 +108,6 @@ where
 /// in the filter throughout, maintaining realistic memory pressure at every
 /// size without the per-iteration setup overhead that breaks `iter_batched` at
 /// large `n`.
-#[allow(dead_code)]
 pub fn bench_remove_hit<F, MakeF>(group: &mut BenchmarkGroup<WallTime>, make: MakeF)
 where
     F: RemovableFilter,
@@ -139,7 +143,6 @@ where
 /// Probes are drawn from a range far outside the inserted set, guaranteeing
 /// they were never inserted. The filter is fully populated and never mutated
 /// during timing (absent removes return `false` without modifying state).
-#[allow(dead_code)]
 pub fn bench_remove_miss<F, MakeF>(group: &mut BenchmarkGroup<WallTime>, make: MakeF)
 where
     F: RemovableFilter,
@@ -157,6 +160,83 @@ where
             let mut i = 0usize;
             b.iter(|| {
                 let r = black_box(f.remove(&probes[i % n]));
+                i += 1;
+                r
+            });
+        });
+    }
+}
+
+/// Benchmarks a single `insert` call on a [`ConcurrentFilter`] at each
+/// capacity in [`SIZES`].
+///
+/// Uses `&self` insertion, measuring the overhead of atomic `fetch_or` vs the
+/// plain bit-set in `bench_insert`. Single-threaded — the goal is to isolate
+/// the per-operation atomic cost, not multi-threaded throughput.
+pub fn bench_concurrent_insert<F, MakeF>(group: &mut BenchmarkGroup<WallTime>, make: MakeF)
+where
+    F: ConcurrentFilter,
+    MakeF: Fn(usize) -> F,
+{
+    for &n in SIZES {
+        group.throughput(Throughput::Elements(1));
+        group.bench_with_input(BenchmarkId::from_parameter(n), &n, |b, &n| {
+            let f = make(n);
+            let mut i = 0u64;
+            b.iter(|| {
+                f.insert(black_box(&i));
+                i = i.wrapping_add(1);
+            });
+        });
+    }
+}
+
+/// Benchmarks a single `contains` call on a [`ConcurrentFilter`] for an item
+/// that **is** present.
+///
+/// Measures the overhead of `Acquire` loads vs plain loads in `bench_contains_hit`.
+pub fn bench_concurrent_contains_hit<F, MakeF>(group: &mut BenchmarkGroup<WallTime>, make: MakeF)
+where
+    F: ConcurrentFilter,
+    MakeF: Fn(usize) -> F,
+{
+    for &n in SIZES {
+        group.throughput(Throughput::Elements(1));
+        group.bench_with_input(BenchmarkId::from_parameter(n), &n, |b, &n| {
+            let items: Vec<u64> = (0..n as u64).collect();
+            let f = make(n);
+            for item in &items {
+                f.insert(item);
+            }
+            let mut i = 0usize;
+            b.iter(|| {
+                let r = black_box(f.contains(&items[i % n]));
+                i += 1;
+                r
+            });
+        });
+    }
+}
+
+/// Benchmarks a single `contains` call on a [`ConcurrentFilter`] for an item
+/// that is **absent**.
+pub fn bench_concurrent_contains_miss<F, MakeF>(group: &mut BenchmarkGroup<WallTime>, make: MakeF)
+where
+    F: ConcurrentFilter,
+    MakeF: Fn(usize) -> F,
+{
+    for &n in SIZES {
+        group.throughput(Throughput::Elements(1));
+        group.bench_with_input(BenchmarkId::from_parameter(n), &n, |b, &n| {
+            let items: Vec<u64> = (0..n as u64).collect();
+            let probes: Vec<u64> = (1_000_000_000u64..1_000_000_000 + n as u64).collect();
+            let f = make(n);
+            for item in &items {
+                f.insert(item);
+            }
+            let mut i = 0usize;
+            b.iter(|| {
+                let r = black_box(f.contains(&probes[i % n]));
                 i += 1;
                 r
             });
