@@ -15,7 +15,7 @@
 
 mod common;
 
-use blume::{BloomError, BloomFilter, Filter, MutableFilter};
+use blume::prelude::*;
 use common::data::arb_user_id;
 use proptest::prelude::*;
 use rstest::rstest;
@@ -119,6 +119,18 @@ proptest! {
         for item in &items { f.insert(item); }
         for item in &items { prop_assert!(f.contains(item)); }
     }
+}
+
+// --- is_empty ---
+
+#[test]
+fn is_empty_reflects_insertions() {
+    let mut f = BloomFilter::new(100, 0.01).unwrap();
+    assert!(f.is_empty());
+    f.insert(&1u64);
+    assert!(!f.is_empty());
+    f.clear();
+    assert!(f.is_empty());
 }
 
 // --- proptest: behavioural ---

@@ -23,7 +23,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -41,7 +41,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// assert_eq!(filter.item_count(), 0);
@@ -84,7 +84,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// assert_eq!(filter.estimated_fpr(), 0.0);
@@ -102,7 +102,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// assert!(filter.is_empty());
@@ -131,7 +131,7 @@ pub trait MutableFilter: Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -147,7 +147,7 @@ pub trait MutableFilter: Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -156,4 +156,50 @@ pub trait MutableFilter: Filter {
     /// assert!(!filter.contains("hello"));
     /// ```
     fn clear(&mut self);
+}
+
+/// A bloom filter that supports deletion.
+///
+/// Extends [`MutableFilter`] with a `remove` operation. Not all filter types
+/// support deletion — standard bit-array filters cannot remove items because
+/// a single bit may be shared by multiple items. Use [`CountingBloomFilter`]
+/// or another counting-based implementation when you need this capability.
+///
+/// # Correctness contract
+///
+/// `remove` is only safe to call for items that were previously inserted.
+/// Removing an item that was never inserted decrements counters that other
+/// items depend on, which **will cause false negatives** — a serious
+/// correctness violation. The caller is responsible for tracking what has
+/// been inserted.
+///
+/// [`CountingBloomFilter`]: crate::CountingBloomFilter
+pub trait RemovableFilter: MutableFilter {
+    /// Removes `item` from the filter by decrementing its counters.
+    ///
+    /// Returns `true` if the item was probably present and was removed,
+    /// `false` if it was definitely absent (no counters were modified).
+    ///
+    /// # Correctness
+    ///
+    /// Only call this for items you know were previously inserted. Removing
+    /// an item that was never inserted will corrupt the filter and cause
+    /// future [`Filter::contains`] calls to return incorrect results.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use blume::prelude::*;
+    ///
+    /// let mut filter = CountingBloomFilter::new(100, 0.01).unwrap();
+    /// filter.insert("hello");
+    ///
+    /// assert!(filter.contains("hello"));
+    /// assert!(filter.remove("hello"));
+    /// assert!(!filter.contains("hello"));
+    ///
+    /// // Removing an absent item returns false and leaves the filter unchanged.
+    /// assert!(!filter.remove("world"));
+    /// ```
+    fn remove<T: Bloomable + ?Sized>(&mut self, item: &T) -> bool;
 }

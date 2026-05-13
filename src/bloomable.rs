@@ -17,6 +17,13 @@
 /// | `[u8]`, `Vec<u8>` | raw bytes as-is |
 /// | `u8`–`u128`, `usize` | little-endian bytes |
 /// | `i8`–`i128`, `isize` | little-endian bytes |
+/// | `f32`, `f64` | IEEE 754 bit pattern, little-endian (`to_bits().to_le_bytes()`) |
+/// | `bool` | single byte: `0` for `false`, `1` for `true` |
+///
+/// **Note on floats:** each distinct bit pattern is treated as a distinct value.
+/// `NaN != NaN` under IEEE 754 but both will be found after insertion because
+/// `to_bits()` preserves the exact bit pattern. `-0.0` and `+0.0` have
+/// different bit patterns and are treated as different items.
 ///
 /// # Implementing for custom types
 ///
@@ -25,7 +32,7 @@
 /// identical byte slices.
 ///
 /// ```rust
-/// use blume::Bloomable;
+/// use blume::prelude::*;
 ///
 /// struct UserId(u64);
 ///
@@ -40,7 +47,7 @@
 /// forward the reference:
 ///
 /// ```rust
-/// use blume::Bloomable;
+/// use blume::prelude::*;
 ///
 /// struct IpAddr([u8; 4]);
 ///
@@ -102,3 +109,21 @@ macro_rules! impl_bloomable_int {
 }
 
 impl_bloomable_int!(u8, u16, u32, u64, u128, usize, i8, i16, i32, i64, i128, isize);
+
+impl Bloomable for bool {
+    fn with_bloom_bytes<R>(&self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&[*self as u8])
+    }
+}
+
+impl Bloomable for f32 {
+    fn with_bloom_bytes<R>(&self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_bits().to_le_bytes())
+    }
+}
+
+impl Bloomable for f64 {
+    fn with_bloom_bytes<R>(&self, f: impl FnOnce(&[u8]) -> R) -> R {
+        f(&self.to_bits().to_le_bytes())
+    }
+}

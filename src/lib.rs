@@ -12,7 +12,7 @@
 //! ## Quick start
 //!
 //! ```rust
-//! use blume::{BloomFilter, Filter, MutableFilter};
+//! use blume::prelude::*;
 //!
 //! // Create a filter for 1 000 items with a 1% false positive rate.
 //! let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
@@ -31,7 +31,7 @@
 //! supported out of the box:
 //!
 //! ```rust
-//! use blume::{BloomFilter, MutableFilter, Filter};
+//! use blume::prelude::*;
 //!
 //! let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 //!
@@ -46,7 +46,7 @@
 //! Implement [`Bloomable`] to use your own types:
 //!
 //! ```rust
-//! use blume::{Bloomable, BloomFilter, MutableFilter, Filter};
+//! use blume::prelude::*;
 //!
 //! struct UserId(u64);
 //!
@@ -98,11 +98,12 @@
 pub mod bloomable;
 pub mod error;
 pub mod filters;
+pub mod prelude;
 pub mod traits;
 pub(crate) mod hash;
 pub(crate) mod math;
 
 pub use bloomable::Bloomable;
 pub use error::BloomError;
-pub use filters::BloomFilter;
-pub use traits::{Filter, MutableFilter};
+pub use filters::{BloomFilter, CountingBloomFilter};
+pub use traits::{Filter, MutableFilter, RemovableFilter};

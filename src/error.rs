@@ -27,20 +27,16 @@ pub enum BloomError {
     /// carried is the FPR that was provided.
     InvalidFpr(f64),
 
-    /// The `bits` argument to [`BloomFilter::with_params`] was `0`.
+    /// The `bits` (or `counters`) argument to a `with_params` constructor was `0`.
     ///
-    /// A filter must have at least one bit. The value carried is the bit count
+    /// A filter must have at least one bit. The value carried is the count
     /// that was provided.
-    ///
-    /// [`BloomFilter::with_params`]: crate::BloomFilter::with_params
     InvalidBitCount(usize),
 
-    /// The `hash_fns` argument to [`BloomFilter::with_params`] was `0`.
+    /// The `hash_fns` argument to a `with_params` constructor was `0`.
     ///
     /// A filter must use at least one hash function. The value carried is the
-    /// hash function count that was provided.
-    ///
-    /// [`BloomFilter::with_params`]: crate::BloomFilter::with_params
+    /// count that was provided.
     InvalidHashCount(usize),
 }
 

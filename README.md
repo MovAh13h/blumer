@@ -23,9 +23,8 @@ blume = "0.1"
 ## Quick start
 
 ```rust
-use blume::{BloomFilter, Filter, MutableFilter};
+use blume::prelude::*;
 
-// Create a filter sized for 1 000 items at a 1% false positive rate.
 let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 
 filter.insert("alice");
@@ -38,39 +37,25 @@ assert!(!filter.contains("eve"));  // definitely absent (barring false positive)
 
 ## Supported types
 
-Any type that implements [`Bloomable`] can be inserted. The following types are
+Any type that implements `Bloomable` can be inserted. The following types are
 supported out of the box:
 
-```rust
-use blume::{BloomFilter, Filter, MutableFilter};
-
-let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
-
-filter.insert("a string slice");
-filter.insert(&String::from("an owned string"));
-filter.insert(&42u64);
-filter.insert(&[1u8, 2, 3][..]);
-```
-
-Full list of built-in implementations:
-
-| Type | Notes |
-|------|-------|
-| `u8`, `u16`, `u32`, `u64`, `u128`, `usize` | Little-endian byte representation |
-| `i8`, `i16`, `i32`, `i64`, `i128`, `isize` | Little-endian byte representation |
-| `f32`, `f64` | Little-endian IEEE 754 bits |
-| `bool` | Single byte (`0` or `1`) |
+| Type | Byte representation |
+|------|---------------------|
+| `u8`–`u128`, `usize` | Little-endian |
+| `i8`–`i128`, `isize` | Little-endian |
+| `f32`, `f64` | IEEE 754 bit pattern, little-endian |
+| `bool` | Single byte: `0` or `1` |
 | `&str`, `String` | UTF-8 bytes |
 | `&[u8]`, `Vec<u8>` | Raw bytes |
 
 ## Custom types
 
-Implement `Bloomable` to use your own types. The callback pattern passes a
-`&[u8]` reference to the hashing logic with zero allocation — no intermediate
-`Vec<u8>` is created.
+Implement `Bloomable` to use your own types. The callback pattern passes
+`&[u8]` to the hashing logic with zero allocation:
 
 ```rust
-use blume::{Bloomable, BloomFilter, Filter, MutableFilter};
+use blume::Bloomable;
 
 struct UserId(u64);
 
@@ -79,10 +64,6 @@ impl Bloomable for UserId {
         f(&self.0.to_le_bytes())
     }
 }
-
-let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
-filter.insert(&UserId(42));
-assert!(filter.contains(&UserId(42)));
 ```
 
 For composite types, pack all fields into a fixed-size stack buffer:
@@ -102,74 +83,130 @@ impl Bloomable for UserId {
 }
 ```
 
-## False positive rate (FPR)
+## How it works — the math
 
-The FPR is the probability that `contains` returns `true` for an item that was
-**never inserted**. Pass it as a `f64` in the open interval `(0, 1)`:
+A bloom filter is defined by three parameters:
 
-| `fpr` value | Meaning |
-|-------------|---------|
-| `0.01`      | 1 in 100 non-inserted items falsely reported as present |
-| `0.001`     | 1 in 1 000 |
-| `0.0001`    | 1 in 10 000 |
+| Symbol | Name | Role |
+|--------|------|------|
+| `n` | capacity | number of items the filter is designed to hold |
+| `p` | false positive rate | target probability of a false positive at capacity |
+| `m` | bit count | total bits in the internal array |
+| `k` | hash count | number of hash positions set per item |
 
-The FPR you pass to `BloomFilter::new` is a **target at the stated capacity**.
-It holds precisely when the number of insertions equals `capacity`. Inserting
-more items causes the actual FPR to rise; inserting fewer keeps it below the
-target.
+**Computing m and k from n and p**
 
-Use `Filter::estimated_fpr` to observe the actual rate at runtime as the filter
-fills.
+```
+m = -(n · ln p) / ln(2)²     ← total bits needed
+k =  (m / n)   · ln(2)       ← optimal number of hash functions
+```
+
+**Why these formulas?**
+
+After inserting `n` items with `k` hash functions into an `m`-bit array, any
+given bit is set with probability:
+
+```
+P(bit is set) = 1 - (1 - 1/m)^(k·n)  ≈  1 - e^(-k·n/m)
+```
+
+A false positive occurs when all `k` positions of an uninserted item happen to
+be set by other items. Assuming independence:
+
+```
+p = (1 - e^(-k·n/m))^k
+```
+
+Minimising this expression over `m` (for fixed `n` and `p`) and then solving
+for the optimal `k` yields the formulas above. The `ln(2)²` in `m` and `ln(2)`
+in `k` are the normalisation constants that fall out of that minimisation. At
+the optimum, exactly half the bits in the array are set.
+
+**Practical values**
+
+| FPR target | Bits per item (`m/n`) | Hash functions (`k`) |
+|------------|-----------------------|----------------------|
+| 1%         | ~9.6                  | 7                    |
+| 0.1%       | ~14.4                 | 10                   |
+| 0.01%      | ~19.2                 | 14                   |
+
+Each halving of the FPR adds ~1.4 bits per item (`ln 2` extra bits).
+
+## False positive rate
+
+The FPR you pass to `new` is a **target at the stated capacity** — it holds
+when insertions equal `capacity`. Inserting more items causes the actual rate
+to rise above the target; inserting fewer keeps it below.
+
+| `fpr` | Meaning |
+|-------|---------|
+| `0.01` | 1 in 100 non-inserted items falsely reported present |
+| `0.001` | 1 in 1 000 |
+| `0.0001` | 1 in 10 000 |
+
+Use `Filter::estimated_fpr` at runtime to observe the current rate as the
+filter fills.
 
 ## Memory usage
 
-The filter stores `m` bits in a packed `u64` array, where:
+`BloomFilter` stores bits packed into a `u64` array (`ceil(m / 64)` words).
+`CountingBloomFilter` stores one `u8` counter per slot (`m` bytes),
+costing 8× the memory of a standard filter.
 
-```
-m = -(n · ln(p)) / ln(2)²
-```
+| Items (`n`) | FPR | Standard | Counting |
+|-------------|-----|----------|----------|
+| 1 000       | 1%  | ~1.2 KB  | ~9.4 KB  |
+| 100 000     | 1%  | ~117 KB  | ~938 KB  |
+| 1 000 000   | 1%  | ~1.2 MB  | ~9.4 MB  |
 
-Quick reference for common configurations:
+For comparison, 1 000 000 items in a `HashSet<u64>` uses ~40 MB — ~30× more
+than the standard filter.
 
-| Items (`n`) | FPR (`p`) | Bit array   | RAM      |
-|-------------|-----------|-------------|----------|
-| 1 000       | 1%        | ~9 600 b    | ~1.2 KB  |
-| 100 000     | 1%        | ~960 000 b  | ~117 KB  |
-| 1 000 000   | 1%        | ~9.6 Mb     | ~1.2 MB  |
-| 1 000 000   | 0.1%      | ~14.4 Mb    | ~1.7 MB  |
+## Filters
 
-For comparison, storing the same 1 000 000 items in a `HashSet<u64>` typically
-uses ~40 MB — roughly 30× more.
+| Type | Deletion | Memory | Use when |
+|------|----------|--------|----------|
+| `BloomFilter` | No | 1× | you only need insert + lookup |
+| `CountingBloomFilter` | Yes (`remove`) | 8× | you need to delete items |
 
 ## Constructors
 
 | Constructor | Use case |
 |-------------|----------|
-| `BloomFilter::new(capacity, fpr)` | Normal use — computes optimal `m` and `k` automatically |
-| `BloomFilter::with_params(bits, hash_fns)` | Expert use — explicit parameters, e.g. when rehydrating from storage |
+| `BloomFilter::new(n, p)` | Normal use — optimal `m` and `k` computed automatically |
+| `BloomFilter::with_params(bits, hash_fns)` | Expert use — match the exact geometry of an existing filter (e.g. deserialising from storage) |
+
+Same constructors exist on `CountingBloomFilter`.
+
+## Prelude
+
+Import everything at once:
+
+```rust
+use blume::prelude::*;
+// BloomFilter, CountingBloomFilter, Filter, MutableFilter, RemovableFilter,
+// Bloomable, and BloomError are all in scope.
+```
 
 ## Feature flags
 
-| Flag | Description |
-|------|-------------|
-| `serde` | Enables `serde::Serialize` / `serde::Deserialize` on `BloomFilter` |
+| Flag | Default | Description |
+|------|---------|-------------|
+| `serde` | off | `Serialize` / `Deserialize` on both filter types |
 
 ```toml
-[dependencies]
 blume = { version = "0.1", features = ["serde"] }
 ```
 
 ## Design notes
 
 - **Hashing:** each item is hashed twice with [AHash] using fixed high-entropy
-  seeds. From those two values, `k` bit positions are derived using the
-  [Kirsch–Mitzenmacher] double-hashing optimization — no further hash calls
-  needed.
-- **Range reduction:** bit positions use the multiplication trick
-  `(h × m) >> 64` instead of `h % m`, replacing a ~30-cycle integer division
-  with a ~3-cycle multiply-and-shift.
-- **Bit packing:** bits are stored in `u64` words (64 bits per word), keeping
-  memory aligned and allowing single-instruction word loads on every lookup.
+  seeds. `k` bit positions are derived from those two values using the
+  [Kirsch–Mitzenmacher] double-hashing formula — no further hash calls needed.
+- **Range reduction:** `(h × m) >> 64` instead of `h % m` — replaces a
+  ~30-cycle integer division with a ~3-cycle multiply-and-shift.
+- **Bit packing:** bits stored in `u64` words; counters packed 4-bit,
+  two-per-byte. Both layouts are cache-line aligned.
 
 [AHash]: https://github.com/tkaitchuck/aHash
 [Kirsch–Mitzenmacher]: https://www.eecs.harvard.edu/~michaelm/postscripts/tr-02-05.pdf

@@ -83,7 +83,7 @@ use crate::Bloomable;
 /// # Examples
 ///
 /// ```rust
-/// use blume::{BloomFilter, Filter, MutableFilter};
+/// use blume::prelude::*;
 ///
 /// let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 ///
@@ -152,7 +152,7 @@ impl BloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, BloomError};
+    /// use blume::prelude::*;
     ///
     /// let filter = BloomFilter::new(10_000, 0.01).unwrap();
     ///
@@ -201,7 +201,7 @@ impl BloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::{BloomFilter, Filter, MutableFilter};
+    /// use blume::prelude::*;
     ///
     /// // Manually sized for ~1 000 items at ~1% FPR.
     /// let mut filter = BloomFilter::with_params(9_585, 7).unwrap();
@@ -221,7 +221,7 @@ impl BloomFilter {
 
     fn raw(m: usize, k: usize, n: usize) -> Self {
         Self {
-            bits: vec![0u64; (m + 63) / 64],
+            bits: vec![0u64; m.div_ceil(64)],
             k,
             m,
             n,
