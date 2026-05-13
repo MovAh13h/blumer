@@ -41,7 +41,7 @@ use crate::Bloomable;
 /// # Examples
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 ///
 /// let mut filter = CountingBloomFilter::new(1_000, 0.01).unwrap();
 ///
@@ -86,7 +86,7 @@ impl CountingBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = CountingBloomFilter::new(10_000, 0.01).unwrap();
     ///
@@ -114,7 +114,7 @@ impl CountingBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CountingBloomFilter::with_params(9_585, 7).unwrap();
     /// filter.insert("hello");

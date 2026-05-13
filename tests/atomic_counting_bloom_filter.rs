@@ -7,7 +7,7 @@
 //! - **Behavioural** — `clear`, `item_count`, `is_empty`, `estimated_fpr`.
 //! - **Statistical** — empirical FPR within expected bounds.
 
-use blume::prelude::*;
+use blumer::prelude::*;
 use proptest::prelude::*;
 use rstest::rstest;
 use std::sync::Arc;

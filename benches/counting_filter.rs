@@ -1,6 +1,6 @@
 mod common;
 
-use blume::CountingBloomFilter;
+use blumer::CountingBloomFilter;
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn make(n: usize) -> CountingBloomFilter {

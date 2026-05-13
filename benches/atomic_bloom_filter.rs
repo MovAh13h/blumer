@@ -1,6 +1,6 @@
 mod common;
 
-use blume::AtomicBloomFilter;
+use blumer::AtomicBloomFilter;
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn make(n: usize) -> AtomicBloomFilter {

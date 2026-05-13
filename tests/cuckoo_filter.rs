@@ -9,7 +9,7 @@
 
 mod common;
 
-use blume::prelude::*;
+use blumer::prelude::*;
 use proptest::prelude::*;
 use rstest::rstest;
 

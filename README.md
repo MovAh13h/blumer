@@ -1,7 +1,7 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/blume-lockup-dark.svg">
-    <img src="assets/blume-lockup.svg" alt="blume" width="340">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/blumer-lockup-dark.svg">
+    <img src="assets/blumer-lockup.svg" alt="blumer" width="340">
   </picture>
 
   <p>A high-performance, bit-optimized bloom filter library for Rust.</p>
@@ -17,13 +17,13 @@ positives is acceptable in exchange for significant memory savings.
 
 ```toml
 [dependencies]
-blume = "0.2"
+blumer = "0.2"
 ```
 
 ## Quick start
 
 ```rust
-use blume::prelude::*;
+use blumer::prelude::*;
 
 let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 
@@ -55,7 +55,7 @@ Implement `Bloomable` to use your own types. The callback pattern passes
 `&[u8]` to the hashing logic with zero allocation:
 
 ```rust
-use blume::Bloomable;
+use blumer::Bloomable;
 
 struct UserId(u64);
 
@@ -69,7 +69,7 @@ impl Bloomable for UserId {
 For composite types, pack all fields into a fixed-size stack buffer:
 
 ```rust
-use blume::Bloomable;
+use blumer::Bloomable;
 
 struct UserId { namespace: u32, id: u64 }
 
@@ -188,7 +188,7 @@ Same constructors exist on `CountingBloomFilter`, `AtomicBloomFilter`, and `Atom
 simultaneously without external locking:
 
 ```rust
-use blume::prelude::*;
+use blumer::prelude::*;
 use std::sync::Arc;
 
 let filter = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());
@@ -214,7 +214,7 @@ every insert that completes before a `contains` call is visible to it.
 Import everything at once:
 
 ```rust
-use blume::prelude::*;
+use blumer::prelude::*;
 // BloomFilter, CountingBloomFilter, AtomicBloomFilter, AtomicCountingBloomFilter,
 // CuckooFilter, ScalableBloomFilter, Filter, MutableFilter, RemovableFilter,
 // ConcurrentFilter, Bloomable, and BloomError are all in scope.
@@ -227,7 +227,7 @@ use blume::prelude::*;
 | `serde` | off | `Serialize` / `Deserialize` on all filter types |
 
 ```toml
-blume = { version = "0.2", features = ["serde"] }
+blumer = { version = "0.2", features = ["serde"] }
 ```
 
 ## Design notes

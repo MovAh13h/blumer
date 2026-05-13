@@ -1,4 +1,4 @@
-//! # blume
+//! # blumer
 //!
 //! A high-performance, bit-optimized bloom filter library for Rust.
 //!
@@ -12,7 +12,7 @@
 //! ## Quick start
 //!
 //! ```rust
-//! use blume::prelude::*;
+//! use blumer::prelude::*;
 //!
 //! // Create a filter for 1 000 items with a 1% false positive rate.
 //! let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
@@ -31,7 +31,7 @@
 //! supported out of the box:
 //!
 //! ```rust
-//! use blume::prelude::*;
+//! use blumer::prelude::*;
 //!
 //! let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 //!
@@ -46,7 +46,7 @@
 //! Implement [`Bloomable`] to use your own types:
 //!
 //! ```rust
-//! use blume::prelude::*;
+//! use blumer::prelude::*;
 //!
 //! struct UserId(u64);
 //!
@@ -92,7 +92,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! blume = { version = "*", features = ["serde"] }
+//! blumer = { version = "*", features = ["serde"] }
 //! ```
 
 pub mod bloomable;

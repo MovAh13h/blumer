@@ -32,7 +32,7 @@
 /// identical byte slices.
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 ///
 /// struct UserId(u64);
 ///
@@ -47,7 +47,7 @@
 /// forward the reference:
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 ///
 /// struct IpAddr([u8; 4]);
 ///

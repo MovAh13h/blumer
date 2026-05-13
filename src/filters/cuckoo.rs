@@ -56,7 +56,7 @@ const MAX_KICKS: usize = 500;
 /// # Examples
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 ///
 /// let mut filter = CuckooFilter::new(1_000).unwrap();
 ///
@@ -100,7 +100,7 @@ impl CuckooFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CuckooFilter::new(1_000).unwrap();
     /// filter.insert("hello").unwrap();
@@ -133,7 +133,7 @@ impl CuckooFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CuckooFilter::with_buckets(256).unwrap();
     /// filter.insert("hello").unwrap();
@@ -160,7 +160,7 @@ impl CuckooFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CuckooFilter::new(100).unwrap();
     /// assert!(filter.insert("hello").is_ok());
@@ -210,7 +210,7 @@ impl CuckooFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CuckooFilter::new(100).unwrap();
     /// filter.insert("hello").unwrap();
@@ -233,7 +233,7 @@ impl CuckooFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CuckooFilter::new(100).unwrap();
     /// filter.insert("hello").unwrap();

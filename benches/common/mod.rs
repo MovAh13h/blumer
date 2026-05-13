@@ -9,7 +9,7 @@
 // so we suppress it at the module level rather than on each function.
 #![allow(dead_code)]
 
-use blume::{ConcurrentFilter, MutableFilter, RemovableFilter};
+use blumer::{ConcurrentFilter, MutableFilter, RemovableFilter};
 use criterion::{BenchmarkGroup, BenchmarkId, Throughput, black_box, measurement::WallTime};
 
 /// Capacities at which every benchmark is run.
