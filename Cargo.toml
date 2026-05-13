@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2024"
 description = "A high-performance, bit-optimized bloom filter library for Rust"
 license = "MIT"
-repository = "https://github.com/MovAh13h/blume"
+repository = "https://github.com/MovAh13h/blumer"
 keywords = ["bloom-filter", "probabilistic", "data-structures", "hashing", "membership"]
 categories = ["data-structures", "algorithms"]
 
