@@ -162,3 +162,33 @@ serde_tests!(bloom_filter, BloomFilter);
 serde_tests!(counting_filter, CountingBloomFilter);
 serde_tests!(atomic_bloom_filter, AtomicBloomFilter);
 serde_tests!(scalable_bloom_filter, ScalableBloomFilter, no_with_params);
+
+// CuckooFilter::new takes only capacity (no FPR), so it can't use the macro.
+mod cuckoo_filter {
+    use blume::prelude::*;
+    use super::assert_round_trip;
+
+    #[test]
+    fn empty_round_trip() {
+        let f = CuckooFilter::new(1_000).unwrap();
+        assert_round_trip(&f, &[], &[]);
+    }
+
+    #[test]
+    fn populated_round_trip() {
+        let mut f = CuckooFilter::new(1_000).unwrap();
+        let items: Vec<u64> = (0..200).collect();
+        for item in &items { f.insert(item).unwrap(); }
+        let absent: Vec<u64> = (1_000_000u64..1_000_200).collect();
+        assert_round_trip(&f, &items, &absent);
+    }
+
+    #[test]
+    fn with_buckets_round_trip() {
+        let mut f = CuckooFilter::with_buckets(256).unwrap();
+        let items: Vec<u64> = (0..100).collect();
+        for item in &items { f.insert(item).unwrap(); }
+        let absent: Vec<u64> = (1_000_000u64..1_000_100).collect();
+        assert_round_trip(&f, &items, &absent);
+    }
+}
