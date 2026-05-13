@@ -2,7 +2,7 @@
 
 use crate::error::BloomError;
 use crate::hash::{bit_positions, hash_pair};
-use crate::math::{estimated_fpr, optimal_bit_count, optimal_hash_count};
+use crate::math::{estimated_fpr, validated_params, validated_with_params};
 use crate::traits::{Filter, MutableFilter};
 use crate::Bloomable;
 
@@ -161,14 +161,7 @@ impl BloomFilter {
     /// assert!(BloomFilter::new(100, 1.0).is_err());
     /// ```
     pub fn new(capacity: usize, fpr: f64) -> Result<Self, BloomError> {
-        if capacity == 0 {
-            return Err(BloomError::InvalidCapacity(capacity));
-        }
-        if !fpr.is_finite() || fpr <= 0.0 || fpr >= 1.0 {
-            return Err(BloomError::InvalidFpr(fpr));
-        }
-        let m = optimal_bit_count(capacity, fpr);
-        let k = optimal_hash_count(m, capacity);
+        let (m, k) = validated_params(capacity, fpr)?;
         Ok(Self::raw(m, k, capacity))
     }
 
@@ -209,14 +202,8 @@ impl BloomFilter {
     /// assert!(filter.contains("hello"));
     /// ```
     pub fn with_params(bits: usize, hash_fns: usize) -> Result<Self, BloomError> {
-        if bits == 0 {
-            return Err(BloomError::InvalidBitCount(bits));
-        }
-        if hash_fns == 0 {
-            return Err(BloomError::InvalidHashCount(hash_fns));
-        }
-        let n = ((bits as f64 * std::f64::consts::LN_2) / hash_fns as f64).round() as usize;
-        Ok(Self::raw(bits, hash_fns, n.max(1)))
+        let n = validated_with_params(bits, hash_fns)?;
+        Ok(Self::raw(bits, hash_fns, n))
     }
 
     fn raw(m: usize, k: usize, n: usize) -> Self {

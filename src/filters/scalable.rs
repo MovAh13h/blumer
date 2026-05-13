@@ -173,8 +173,13 @@ impl ScalableBloomFilter {
         let i = self.slices.len();
         let capacity = self.initial_capacity.saturating_mul((self.growth as usize).pow(i as u32));
         let fpr = self.target_fpr * (1.0 - self.tightening) * self.tightening.powi(i as i32);
-        // fpr_i converges toward 0 as i grows; clamp to avoid underflow.
+        // fpr_i converges toward 0 as i grows; clamp to the smallest positive
+        // f64 to keep it within BloomFilter::new's valid range.
         let fpr = fpr.max(f64::MIN_POSITIVE);
+        // capacity uses saturating_mul so overflow produces usize::MAX rather
+        // than wrapping. BloomFilter::new will then attempt to allocate an
+        // enormous bit array and the allocator will abort — acceptable since
+        // reaching this point requires an astronomically large number of slices.
         self.slices.push(BloomFilter::new(capacity, fpr).unwrap());
     }
 }

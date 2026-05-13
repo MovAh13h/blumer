@@ -5,7 +5,7 @@ use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
 use crate::error::BloomError;
 use crate::hash::{bit_positions, hash_pair};
-use crate::math::{estimated_fpr, optimal_bit_count, optimal_hash_count};
+use crate::math::{estimated_fpr, validated_params, validated_with_params};
 use crate::traits::{ConcurrentFilter, Filter};
 use crate::Bloomable;
 
@@ -113,14 +113,7 @@ impl AtomicBloomFilter {
     /// assert!(AtomicBloomFilter::new(100, 0.0).is_err());
     /// ```
     pub fn new(capacity: usize, fpr: f64) -> Result<Self, BloomError> {
-        if capacity == 0 {
-            return Err(BloomError::InvalidCapacity(capacity));
-        }
-        if !fpr.is_finite() || fpr <= 0.0 || fpr >= 1.0 {
-            return Err(BloomError::InvalidFpr(fpr));
-        }
-        let m = optimal_bit_count(capacity, fpr);
-        let k = optimal_hash_count(m, capacity);
+        let (m, k) = validated_params(capacity, fpr)?;
         Ok(Self::raw(m, k, capacity))
     }
 
@@ -147,14 +140,8 @@ impl AtomicBloomFilter {
     /// assert!(filter.contains("hello"));
     /// ```
     pub fn with_params(bits: usize, hash_fns: usize) -> Result<Self, BloomError> {
-        if bits == 0 {
-            return Err(BloomError::InvalidBitCount(bits));
-        }
-        if hash_fns == 0 {
-            return Err(BloomError::InvalidHashCount(hash_fns));
-        }
-        let n = ((bits as f64 * std::f64::consts::LN_2) / hash_fns as f64).round() as usize;
-        Ok(Self::raw(bits, hash_fns, n.max(1)))
+        let n = validated_with_params(bits, hash_fns)?;
+        Ok(Self::raw(bits, hash_fns, n))
     }
 
     /// Resets all bits to zero and the item count to zero.
@@ -395,12 +382,15 @@ mod serde_impl {
 
     impl Serialize for AtomicBloomFilter {
         fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+            // Relaxed is sufficient here — serialization is inherently
+            // single-threaded and we only need a consistent snapshot of the
+            // current values, not synchronisation with other threads.
             Data {
-                bits: self.bits.iter().map(|w| w.load(Ordering::SeqCst)).collect(),
+                bits: self.bits.iter().map(|w| w.load(Ordering::Relaxed)).collect(),
                 k: self.k,
                 m: self.m,
                 n: self.n,
-                count: self.count.load(Ordering::SeqCst),
+                count: self.count.load(Ordering::Relaxed),
             }
             .serialize(serializer)
         }
