@@ -218,6 +218,87 @@ fn clear_resets_filter() {
     assert!(!f.contains(&2u64));
 }
 
+// --- merge ---
+
+/// Merged filter contains items from both source filters.
+#[test]
+fn merge_contains_all_items() {
+    let a = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    let b = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    a.insert("alice");
+    b.insert("bob");
+
+    let merged = a.merge(&b).unwrap();
+    assert!(merged.contains("alice"));
+    assert!(merged.contains("bob"));
+}
+
+/// Merging with an empty filter contains all items from the original.
+#[test]
+fn merge_with_empty_is_identity() {
+    let a = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    let b = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    for i in 0..100u64 { a.insert(&i); }
+
+    let merged = a.merge(&b).unwrap();
+    for i in 0..100u64 { assert!(merged.contains(&i)); }
+}
+
+/// `item_count` on the merged filter is the sum of both source counts.
+#[test]
+fn merge_item_count_is_sum() {
+    let a = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    let b = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    for i in 0..50u64 { a.insert(&i); }
+    for i in 50..100u64 { b.insert(&i); }
+
+    let merged = a.merge(&b).unwrap();
+    assert_eq!(merged.item_count(), 100);
+}
+
+/// Merging filters with different geometries returns an error.
+#[test]
+fn merge_incompatible_returns_error() {
+    let a = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    let b = AtomicBloomFilter::new(500, 0.01).unwrap();
+    assert!(matches!(a.merge(&b), Err(BloomError::IncompatibleGeometry { .. })));
+}
+
+/// `merge_from` atomically ORs all bits from `other` into `self`.
+#[test]
+fn merge_from_contains_all_items() {
+    let dst = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());
+    let src = AtomicBloomFilter::new(1_000, 0.01).unwrap();
+    dst.insert("alice");
+    src.insert("bob");
+
+    dst.merge_from(&src).unwrap();
+    assert!(dst.contains("alice"));
+    assert!(dst.contains("bob"));
+}
+
+/// `merge_from` is safe to call concurrently with `insert` and `contains`.
+#[test]
+fn merge_from_concurrent() {
+    let dst = Arc::new(AtomicBloomFilter::new(10_000, 0.01).unwrap());
+    let src = Arc::new(AtomicBloomFilter::new(10_000, 0.01).unwrap());
+
+    for i in 0..1_000u64 { src.insert(&i); }
+
+    let dst2 = Arc::clone(&dst);
+    let src2 = Arc::clone(&src);
+    let inserter = std::thread::spawn(move || {
+        for i in 1_000..2_000u64 { dst2.insert(&i); }
+    });
+
+    dst.merge_from(&src).unwrap();
+    inserter.join().unwrap();
+
+    for i in 0..1_000u64 {
+        assert!(dst.contains(&i), "item from src missing after merge_from: {i}");
+    }
+}
+
 // --- proptest: behavioural ---
 
 proptest! {
