@@ -17,7 +17,7 @@
 //! This generates a full test module covering empty, half-full, and at-capacity
 //! round-trips, plus a `with_params` constructor round-trip.
 
-use blume::prelude::*;
+use blumer::prelude::*;
 use serde::{Serialize, de::DeserializeOwned};
 
 // --- shared helper ---
@@ -75,7 +75,7 @@ where
 macro_rules! serde_tests {
     ($mod_name:ident, $filter:ty) => {
         mod $mod_name {
-            use blume::prelude::*;
+            use blumer::prelude::*;
             use super::assert_round_trip;
 
             fn make(n: usize, p: f64) -> $filter {
@@ -120,7 +120,7 @@ macro_rules! serde_tests {
     };
     ($mod_name:ident, $filter:ty, no_with_params) => {
         mod $mod_name {
-            use blume::prelude::*;
+            use blumer::prelude::*;
             use super::assert_round_trip;
 
             fn make(n: usize, p: f64) -> $filter {
@@ -166,7 +166,7 @@ serde_tests!(scalable_bloom_filter, ScalableBloomFilter, no_with_params);
 
 // CuckooFilter::new takes only capacity (no FPR), so it can't use the macro.
 mod cuckoo_filter {
-    use blume::prelude::*;
+    use blumer::prelude::*;
     use super::assert_round_trip;
 
     #[test]

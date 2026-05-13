@@ -1,6 +1,6 @@
 mod common;
 
-use blume::BloomFilter;
+use blumer::BloomFilter;
 use criterion::{Criterion, criterion_group, criterion_main};
 
 fn make(n: usize) -> BloomFilter {

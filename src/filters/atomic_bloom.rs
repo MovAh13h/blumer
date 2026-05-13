@@ -48,13 +48,13 @@ use crate::Bloomable;
 /// round-trip into each other:
 ///
 /// ```toml
-/// blume = { version = "0.1", features = ["serde"] }
+/// blumer = { version = "0.2", features = ["serde"] }
 /// ```
 ///
 /// # Examples
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 /// use std::sync::Arc;
 ///
 /// let filter = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());
@@ -105,7 +105,7 @@ impl AtomicBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = AtomicBloomFilter::new(10_000, 0.01).unwrap();
     ///
@@ -133,7 +133,7 @@ impl AtomicBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = AtomicBloomFilter::with_params(9_585, 7).unwrap();
     /// filter.insert("hello");
@@ -154,7 +154,7 @@ impl AtomicBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = AtomicBloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -194,7 +194,7 @@ impl AtomicBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let a = AtomicBloomFilter::new(1_000, 0.01).unwrap();
     /// let b = AtomicBloomFilter::new(1_000, 0.01).unwrap();
@@ -242,7 +242,7 @@ impl AtomicBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     /// use std::sync::Arc;
     ///
     /// let dst = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());

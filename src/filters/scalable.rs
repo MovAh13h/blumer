@@ -62,7 +62,7 @@ const DEFAULT_TIGHTENING: f64 = 0.5;
 /// # Examples
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 ///
 /// let mut filter = ScalableBloomFilter::new(100, 0.01).unwrap();
 ///
@@ -98,7 +98,7 @@ impl ScalableBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = ScalableBloomFilter::new(1_000, 0.01).unwrap();
     /// filter.insert("hello");
@@ -126,7 +126,7 @@ impl ScalableBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// // 4× growth, aggressive tightening — fewer slices, each using more memory.
     /// let mut filter = ScalableBloomFilter::with_options(1_000, 0.01, 4, 0.9).unwrap();

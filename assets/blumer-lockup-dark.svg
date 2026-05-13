@@ -22,5 +22,5 @@
     </g>
     <circle cx="0" cy="0" r="28" fill="#F5F2EC"></circle>
   </g>
-  <text x="400" y="560" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="500" font-size="96" letter-spacing="7.7" fill="#F5F2EC">blume</text>
+  <text x="400" y="560" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace" font-weight="500" font-size="96" letter-spacing="7.7" fill="#F5F2EC">blumer</text>
 </svg>

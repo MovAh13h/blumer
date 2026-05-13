@@ -83,7 +83,7 @@ use crate::Bloomable;
 /// # Examples
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 ///
 /// let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 ///
@@ -152,7 +152,7 @@ impl BloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = BloomFilter::new(10_000, 0.01).unwrap();
     ///
@@ -194,7 +194,7 @@ impl BloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// // Manually sized for ~1 000 items at ~1% FPR.
     /// let mut filter = BloomFilter::with_params(9_585, 7).unwrap();
@@ -238,7 +238,7 @@ impl BloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut a = BloomFilter::new(1_000, 0.01).unwrap();
     /// let mut b = BloomFilter::new(1_000, 0.01).unwrap();

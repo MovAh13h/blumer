@@ -13,7 +13,7 @@ mod common;
 
 use std::sync::Arc;
 
-use blume::prelude::*;
+use blumer::prelude::*;
 use common::data::arb_user_id;
 use proptest::prelude::*;
 use rstest::rstest;

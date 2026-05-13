@@ -23,7 +23,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -41,7 +41,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// assert_eq!(filter.item_count(), 0);
@@ -84,7 +84,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// assert_eq!(filter.estimated_fpr(), 0.0);
@@ -102,7 +102,7 @@ pub trait Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// assert!(filter.is_empty());
@@ -131,7 +131,7 @@ pub trait MutableFilter: Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -147,7 +147,7 @@ pub trait MutableFilter: Filter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = BloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -189,7 +189,7 @@ pub trait RemovableFilter: MutableFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = CountingBloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -242,7 +242,7 @@ pub trait ConcurrentFilter: Filter + Send + Sync {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     /// use std::sync::Arc;
     ///
     /// let filter = Arc::new(AtomicBloomFilter::new(1_000, 0.01).unwrap());

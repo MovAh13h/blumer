@@ -63,7 +63,7 @@ use crate::Bloomable;
 /// # Examples
 ///
 /// ```rust
-/// use blume::prelude::*;
+/// use blumer::prelude::*;
 /// use std::sync::Arc;
 ///
 /// let filter = Arc::new(AtomicCountingBloomFilter::new(1_000, 0.01).unwrap());
@@ -121,7 +121,7 @@ impl AtomicCountingBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = AtomicCountingBloomFilter::new(10_000, 0.01).unwrap();
     ///
@@ -149,7 +149,7 @@ impl AtomicCountingBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = AtomicCountingBloomFilter::with_params(9_585, 7).unwrap();
     /// filter.insert("hello");
@@ -169,7 +169,7 @@ impl AtomicCountingBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let mut filter = AtomicCountingBloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");
@@ -206,7 +206,7 @@ impl AtomicCountingBloomFilter {
     /// # Examples
     ///
     /// ```rust
-    /// use blume::prelude::*;
+    /// use blumer::prelude::*;
     ///
     /// let filter = AtomicCountingBloomFilter::new(100, 0.01).unwrap();
     /// filter.insert("hello");

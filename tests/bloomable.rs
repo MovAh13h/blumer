@@ -4,7 +4,7 @@
 //! and found in a filter — confirming each `with_bloom_bytes` implementation
 //! produces stable, non-empty byte representations.
 
-use blume::prelude::*;
+use blumer::prelude::*;
 
 fn round_trips<T: Bloomable + ?Sized>(value: &T) {
     let mut f = BloomFilter::new(10, 0.01).unwrap();

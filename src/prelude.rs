@@ -3,7 +3,7 @@
 //! Import everything at once with:
 //!
 //! ```rust
-//! use blume::prelude::*;
+//! use blumer::prelude::*;
 //!
 //! let mut filter = BloomFilter::new(1_000, 0.01).unwrap();
 //! filter.insert("hello");

@@ -1,4 +1,4 @@
-use blume::Bloomable;
+use blumer::Bloomable;
 use proptest::prelude::*;
 
 /// A composite user identifier used to verify that user-defined [`Bloomable`]
