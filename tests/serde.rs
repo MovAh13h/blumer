@@ -161,6 +161,7 @@ macro_rules! serde_tests {
 serde_tests!(bloom_filter, BloomFilter);
 serde_tests!(counting_filter, CountingBloomFilter);
 serde_tests!(atomic_bloom_filter, AtomicBloomFilter);
+serde_tests!(atomic_counting_bloom_filter, AtomicCountingBloomFilter);
 serde_tests!(scalable_bloom_filter, ScalableBloomFilter, no_with_params);
 
 // CuckooFilter::new takes only capacity (no FPR), so it can't use the macro.
