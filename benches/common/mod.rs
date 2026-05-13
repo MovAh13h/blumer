@@ -5,9 +5,7 @@
 //! these functions with the appropriate constructor.
 
 use blume::{MutableFilter, RemovableFilter};
-use criterion::{
-    BatchSize, BenchmarkGroup, BenchmarkId, Throughput, black_box, measurement::WallTime,
-};
+use criterion::{BenchmarkGroup, BenchmarkId, Throughput, black_box, measurement::WallTime};
 
 /// Capacities at which every benchmark is run.
 ///
@@ -99,10 +97,12 @@ where
 
 /// Benchmarks a single `remove` call for an item that **is** present.
 ///
-/// A fresh, fully-populated filter is set up for each measurement via
-/// `iter_batched` so the item is always present when timing begins. This
-/// avoids the contamination that occurs when a shared filter empties and
-/// subsequent calls hit the fast-exit absent path instead.
+/// The filter is pre-loaded with `n` items once. Each iteration times only the
+/// `remove` call, then immediately re-inserts the item (outside the timing
+/// window) to restore state for the next iteration. This keeps all `n` items
+/// in the filter throughout, maintaining realistic memory pressure at every
+/// size without the per-iteration setup overhead that breaks `iter_batched` at
+/// large `n`.
 #[allow(dead_code)]
 pub fn bench_remove_hit<F, MakeF>(group: &mut BenchmarkGroup<WallTime>, make: MakeF)
 where
@@ -113,17 +113,23 @@ where
         group.throughput(Throughput::Elements(1));
         group.bench_with_input(BenchmarkId::from_parameter(n), &n, |b, &n| {
             let items: Vec<u64> = (0..n as u64).collect();
-            b.iter_batched(
-                || {
-                    let mut f = make(n);
-                    for item in &items {
-                        f.insert(item);
-                    }
-                    f
-                },
-                |mut f| black_box(f.remove(&items[0])),
-                BatchSize::LargeInput,
-            );
+            let mut f = make(n);
+            for item in &items {
+                f.insert(item);
+            }
+            let mut idx = 0usize;
+            b.iter_custom(|iters| {
+                let mut total = std::time::Duration::ZERO;
+                for _ in 0..iters {
+                    let target = &items[idx % n];
+                    idx += 1;
+                    let start = std::time::Instant::now();
+                    black_box(f.remove(target));
+                    total += start.elapsed();
+                    f.insert(target); // restore — not timed
+                }
+                total
+            });
         });
     }
 }
