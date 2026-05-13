@@ -17,7 +17,7 @@ positives is acceptable in exchange for significant memory savings.
 
 ```toml
 [dependencies]
-blumer = "0.2"
+blumer = "0.4"
 ```
 
 ## Quick start
@@ -227,7 +227,7 @@ use blumer::prelude::*;
 | `serde` | off | `Serialize` / `Deserialize` on all filter types |
 
 ```toml
-blumer = { version = "0.2", features = ["serde"] }
+blumer = { version = "0.4", features = ["serde"] }
 ```
 
 ## Design notes
