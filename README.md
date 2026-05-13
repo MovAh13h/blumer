@@ -150,14 +150,14 @@ filter fills.
 ## Memory usage
 
 `BloomFilter` stores bits packed into a `u64` array (`ceil(m / 64)` words).
-`CountingBloomFilter` stores 4-bit counters packed two-per-byte
-(`ceil(m / 2)` bytes), costing 4× the memory of a standard filter.
+`CountingBloomFilter` stores one `u8` counter per slot (`m` bytes),
+costing 8× the memory of a standard filter.
 
 | Items (`n`) | FPR | Standard | Counting |
 |-------------|-----|----------|----------|
-| 1 000       | 1%  | ~1.2 KB  | ~4.8 KB  |
-| 100 000     | 1%  | ~117 KB  | ~468 KB  |
-| 1 000 000   | 1%  | ~1.2 MB  | ~4.8 MB  |
+| 1 000       | 1%  | ~1.2 KB  | ~9.4 KB  |
+| 100 000     | 1%  | ~117 KB  | ~938 KB  |
+| 1 000 000   | 1%  | ~1.2 MB  | ~9.4 MB  |
 
 For comparison, 1 000 000 items in a `HashSet<u64>` uses ~40 MB — ~30× more
 than the standard filter.
@@ -167,7 +167,7 @@ than the standard filter.
 | Type | Deletion | Memory | Use when |
 |------|----------|--------|----------|
 | `BloomFilter` | No | 1× | you only need insert + lookup |
-| `CountingBloomFilter` | Yes (`remove`) | 4× | you need to delete items |
+| `CountingBloomFilter` | Yes (`remove`) | 8× | you need to delete items |
 
 ## Constructors
 
