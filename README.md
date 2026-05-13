@@ -1,7 +1,7 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/blumer-lockup-dark.svg">
-    <img src="assets/blumer-lockup.svg" alt="blumer" width="340">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/MovAh13h/blumer/master/assets/blumer-lockup-dark.svg">
+    <img src="https://raw.githubusercontent.com/MovAh13h/blumer/master/assets/blumer-lockup.svg" alt="blumer" width="340">
   </picture>
 
   <p>A high-performance, bit-optimized bloom filter library for Rust.</p>
